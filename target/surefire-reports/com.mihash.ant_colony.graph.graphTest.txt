@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.mihash.ant_colony.graph.graphTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s - in com.mihash.ant_colony.graph.graphTest

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ant Colony Viewer</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <link href="https://unpkg.com/material-components-web@6.0.0/dist/material-components-web.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC59k5SuHRCp-BoS8h3vapW2hSxEA2mDr4&callback=initialize&libraries=&v=weekly" defer> </script>
+    <link th:href="@{/styles/style.css}" rel="stylesheet" />
+  </head>
+  <body>
+  <!--/*@thymesVar id="info" type=""*/-->
+<!--  <p th:text="'Hello, ' + ${info} + '!'" />-->
+    <div id="container">
+      <div id="map"></div>
+      <div id="sidebar" class="mdc-typography">
+        <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+          <fieldset>
+<!--              <h5>Load graph from file</h5>-->
+<!--              <input type='file' id='fileinput' value="Browse">-->
+<!--              <input type='button' id='btnLoad' value='Load it' onclick='loadFile();'>-->
+              <h5>Load graph from Database</h5>
+              <div id = 'graph_loaders'></div>
+              <h5>Clear the map</h5>
+              <input type='button' id='btnRefresh' value='Clear Map' onclick='clearMap();'>
+              <input type='button' id='btnClear' value='Clear Markers' onclick='clearMarkers();'>
+
+          </fieldset>
+        </form>
+        <form id="antRunner" name="antRunner" enctype="multipart/form-data" method="post">
+          <fieldset>
+
+
+            <input type="text" id="startNode" width="40px">
+            <input type="text" id="endNode" width="40px">
+            <input type="button" id="btnRun" value="Run" onclick='run()'>
+
+          </fieldset>
+        </form>
+        <div id="table" style="clear:both;" align = "center" border="1px"></div>
+
+      </div>
+    </div>
+    <div>
+
+    </div>
+  <div class="modal"></div>
+  </body>
+<script type="text/javascript" th:src="@{/js/index.js}"></script>
+</html>

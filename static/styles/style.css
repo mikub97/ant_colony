@@ -1,0 +1,144 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.modal {
+  display:    none;
+  position:   fixed;
+  z-index:    1000;
+  top:        0;
+  left:       0;
+  height:     100%;
+  width:      100%;
+  background: rgba( 255, 255, 255, .8 )
+  url('http://i.stack.imgur.com/FhHRx.gif')
+  50% 50%
+  no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .modal {
+  overflow: hidden;
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+  display: block;
+}
+
+#map {
+  height: 100%;
+}
+#map.over {
+  opacity: 0.5;
+  background-color: rgba(100, 100, 100, 0.5);
+}
+
+#sidebar {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.file {
+  display: flex;
+  flex-flow: column;
+  margin-top: 1em;
+  cursor: move;
+  text-align: center;
+}
+.file:hover .material-icons {
+  color: darkorange;
+}
+.file:hover .filename {
+  font-weight: bold;
+}
+.file .material-icons {
+  font-size: 50px;
+  color: orange;
+}
+.file .material-icons:hover {
+  color: darkorange;
+}
+.file .filename {
+  margin-top: 0.5em;
+  font-size: 20px;
+  color: #333333;
+}
+
+/* Optional: Makes the sample page fill the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+table{
+  border: none;
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+/*table td { border-left: 1px solid #000;  }*/
+table tr td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+}
+table td:first-child { border-left: none; }
+table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+  text-align: left;
+}
+
+table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+
+#container {
+  height: 100%;
+  display: flex;
+}
+
+#sidebar {
+  flex-basis: 15rem;
+  flex-grow: 1;
+  padding: 1rem;
+  max-width: 30rem;
+  height: 100%;
+  box-sizing: border-box;
+  /*display: flex;*/
+}
+
+#map {
+  flex-basis: 0;
+  flex-grow: 4;
+  height: 100%;
+}
+
