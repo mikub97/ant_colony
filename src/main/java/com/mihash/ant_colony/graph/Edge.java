@@ -20,7 +20,6 @@ public class Edge {
         this.id = edgeDao.getId();
         this.from_node =  edgeDao.getCl_node_id_from();
         this.to_node =  edgeDao.getCl_node_id_to();
-        this.street = edgeDao.getStname();
         this.nodes=new ArrayList<>();
         this.the_geom=new ArrayList<double[]>();
         String [] corrs = edgeDao.getCoordinates().replaceAll("\\[","").replaceAll("\\]","").replaceAll(" ","").split(",");
@@ -28,14 +27,6 @@ public class Edge {
             this.the_geom.add(new double[]{Double.valueOf(corrs[i]),Double.valueOf(corrs[i+1])});
 
         }
-//        List<Double> coors = Arrays.asList(edgeDTO.getCoordinates().split(",")).stream().map(new Function<String, Double>() {
-//            @Override
-//            public Double apply(String s) {
-//                return Double.valueOf(s);
-//            }}).collect(Collectors.toList());
-//        for (int i = 0; i < coors.size(); i+=2) {
-//            the_geom.add(new double[]{coors.get(i),coors.get(i+1)});
-//        }
         this.lenght=0;
         this.feromone=1.0;
     }
@@ -71,6 +62,9 @@ public class Edge {
         return to_node;
     }
 
+    public List<Node> getNodes(){
+        return nodes;
+    }
     public String getStreet() {
         return street;
     }
@@ -137,9 +131,6 @@ public class Edge {
         return this.lenght;
     }
 
-    public void updateFeromone(double ratio) {
-        this.feromone+=ratio * 0.05;
-    }
 
     //              {"geometry":{"coordinates":[[[-118.22232560182296,33.783683556011646],[-118.22221076551075,33.78366482375996],[-118.22214265840326,33.783652785415995],[-118.22207485748203,33.78363976112049],[-118.22200734006981,33.78362574821128],[-118.22194012455606,33.783610759276016],[-118.2218732346708,33.78359478525643],[-118.2218066877451,33.78357784685582],[-118.22174049886968,33.783559934130395],[-118.2216747048134,33.783541069550715],[-118.221608365503,33.783520951941355],[-118.22158627010566,33.78351249860804],[-118.22158035935442,33.783509724730145]]],"type":"MultiLineString"},"type":"Feature","properties":{"mapsheet":"033B217","stsfx_a":null,"zip_l":"90744","adlt":"3499","adrt":"0","tooltip":"I ST\\nStreet Designation: Local Street - Standard","type":"70","tdir":"E","stnum":"5726","stsfx":"ST","adlf":"3401","street_des":"Local Street - Standard","int_id_fro":"3781","assetid":"163219","stname_a":null,"int_id_to":"63986","sect_id":"2725000","modified":"0","sfxdir":null,"adrf":"0","id":"98902","zip_r":"90744","street_d_1":"Local Street - Standard","stname":"I"}}
     public String toGeoString(boolean isResult) {
@@ -161,4 +152,6 @@ public class Edge {
 
     }
 
+    public void updateFeromone(double value) {
+    }
 }

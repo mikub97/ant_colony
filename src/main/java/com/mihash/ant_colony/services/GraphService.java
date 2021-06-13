@@ -1,6 +1,7 @@
 package com.mihash.ant_colony.services;
 
 import com.mihash.ant_colony.ant_colony.AntColony;
+import com.mihash.ant_colony.dao.AntColonyDao;
 import com.mihash.ant_colony.dao.EdgeDao;
 import com.mihash.ant_colony.dao.GraphDao;
 import com.mihash.ant_colony.dao.NodeDao;
@@ -40,9 +41,16 @@ public class GraphService implements IGraphService {
 
 
 
+
     @Override
     public GraphDao getGraphByID(int id) {
-        return graphRepository.getGraphById(id);
+        return graphRepository.getGraphDaoById(id);
+    }
+
+    @Override
+    public int insert(GraphDao graphDao) {
+        graphRepository.insert(graphDao);
+        return 0;
     }
 
 
@@ -60,6 +68,8 @@ public class GraphService implements IGraphService {
     @Override
     public Graph createGraphFromId(int n) {
         GraphDao graphDao = getGraphByID(n);
+        if (graphDao==null)
+            return null;
         List<Long> edgesIDs = graphDao.getEdgeIds();
         List<Long> nodesIDs = graphDao.getNodeIds();
 
@@ -72,14 +82,32 @@ public class GraphService implements IGraphService {
         return this.graph;
     }
 
-    public String run(int from, int to) {
-        if (this.graph == null) {
-            return null;
+    public AntColonyDao run(AntColonyDao antColonyDao) {
+        antColonyDao.setResultEmpty();
+        if (this.checkParams(antColonyDao)) {
+            AntColony antColony = new AntColony(graph, antColonyDao);
+            if (antColonyDao.getNode_from() == antColonyDao.getNode_to()){
+                antColonyDao.setDone(true);
+                return antColonyDao;
+            }
+            antColony.run();
+            antColonyDao.setResults(antColony.getBestEdgeHistory(),antColony.getBestNodesHistory(),antColony.getBestResult());
         }
-        AntColony antColony = new AntColony(graph, from, to);
-        antColony.run();
-        System.out.println(antColony.resultsToGeoString());
-        return antColony.resultsToGeoString();
+        System.out.println("finished:");
+        System.out.println(antColonyDao);
+
+        return antColonyDao;
+
+    }
+
+    private boolean checkParams(AntColonyDao antColonyDao){
+        if (this.graph == null)
+            return false;
+        if (! this.graph.getNodesIds().contains(antColonyDao.getNode_to()))
+            return false;
+        if (! this.graph.getNodesIds().contains(antColonyDao.getNode_from()))
+            return false;
+        return true;
     }
 
     @Override

@@ -1,36 +1,159 @@
 let map;
 let points = [];
-let markers=[]
-let traces=null;
 let edges = []
+let features = []
+let result_edge = []
+let startnode = null;
+let endnode = null
 
-function loadGeoJsonString(geoString, is_Result=false) {
+    //
+    // var point = {
+    //     lat: 22.5667,
+    //     lng: 88.3667
+    // };
+    // var markerSize = {
+    //     x: 22,
+    //     y: 40
+    // };
+    //
+    //
+    // google.maps.Marker.prototype.setLabel = function(label) {
+    //     this.label = new MarkerLabel({
+    //         map: this.map,
+    //         marker: this,
+    //         text: label
+    //     });
+    //     this.label.bindTo('position', this, 'position');
+    // };
+    //
+    // var MarkerLabel = function(options) {
+    //     this.setValues(options);
+    //     this.span = document.createElement('span');
+    //     this.span.className = 'map-marker-label';
+    // };
+    //
+    // MarkerLabel.prototype = $.extend(new google.maps.OverlayView(), {
+    //     onAdd: function() {
+    //         this.getPanes().overlayImage.appendChild(this.span);
+    //         var self = this;
+    //         this.listeners = [
+    //             google.maps.event.addListener(this, 'position_changed', function() {
+    //                 self.draw();
+    //             })
+    //         ];
+    //     },
+    //     draw: function() {
+    //         var text = String(this.get('text'));
+    //         var position = this.getProjection().fromLatLngToDivPixel(this.get('position'));
+    //         this.span.innerHTML = text;
+    //         this.span.style.left = (position.x - (markerSize.x / 2)) - (text.length * 3) + 10 + 'px';
+    //         this.span.style.top = (position.y - markerSize.y + 40) + 'px';
+    //     }
+    // });
+
+function loadGeoJsonString(geoString) {
     const geojson = JSON.parse(geoString);
     features = geojson["features"]
-    if (!is_Result )
-        processFeatures(features)
-    try{
-        map.data.addGeoJson(geojson);
-    } catch (e) {
-        alert("Not a GeoJSON file!");
-    }
+    processFeatures(features)
     console.log("edges : ", edges)
     console.log("points : ", points)
-  zoom(map);
+
 }
 
+function loadResults(results) {
+    if (results["done"]==true) {
+        result_edge = results["bestEdgeHistory"]
+        console.log("Results:")
+        console.log(result_edge)
+
+        repaintEdges()
+    }
+}
+
+function repaintEdges(){
+    for (let j = 0; j < edges.length; j++) {
+        if (result_edge.includes(parseInt(edges[j]["id"]))) {
+            edges[j]["polyline"].setOptions({strokeColor: '#FF2BE9', strokeWeight: 8})
+        }
+        else{
+            edges[j]["polyline"].setOptions({strokeColor: 'black',strokeWeight: 2})
+        }
+    }
+}
 function processFeatures(features) {
     points = []
     edges = []
     for (let i = 0; i < features.length; i++) {
         if (features[i]["geometry"].type=="Point"){
-            points.push(features[i]["properties"]);
+            p = {
+                "id":features[i]['properties']['cl_node_id'],
+                "node": features[i]["properties"],
+                "marker": createMarker(features[i])
+            }
+            points.push(p)
         } else {
-            edges.push(features[i])
+            e = {
+                "id": features[i]['properties']['id'],
+                "edge": features[i]['properties'],
+                "polyline": createPoly(features[i])
+            }
+            edges.push(e)
+
         }
+
     }
-    createTable()
+        zoomToMarkers()
+        createTable()
 }
+
+
+function createMarker(feature){
+    marker = new google.maps.Marker({
+        position: {
+            lat: parseFloat(feature['properties']['lat']),
+            lng: parseFloat(feature['properties']['lon'])
+        },
+        icon: {
+            url:"http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        },
+        label:feature['properties']['cl_node_id'],
+        size: (200, 200),
+        map: map,
+    })
+
+
+    google.maps.event.addListener(marker,  'rightclick',  function(mouseEvent) {markEndNode(feature['properties']['cl_node_id'])});
+    google.maps.event.addListener(marker,  'click',  function(mouseEvent) {markStartNode(feature['properties']['cl_node_id'])});
+
+    // marker.addListener("click", (e) => {
+    //     if (pressedKeys[KeyboardEvent.ctrlKey])
+    //         markEndNode(feature['properties']['cl_node_id'])
+    //     else
+    //         markStartNode(feature['properties']['cl_node_id'])
+    //
+    // });
+    return marker
+
+}
+function createPoly(feature){
+    const coords = [];
+    for (let i = 0; i < feature['geometry']['coordinates'][0].length; i++) {
+        coords.push({ lat: parseFloat(feature['geometry']['coordinates'][0][i][1]), lng:parseFloat(feature['geometry']['coordinates'][0][i][0]) })
+    }
+    col = "black"
+    // Construct the polygon.
+    const poly = new google.maps.Polyline({
+        path: coords,
+        strokeColor: col,
+    });
+    poly.setMap(map)
+    return poly
+
+}
+
+
+
+
 
 /**
  * Update a map's viewport to fit each geometry in a dataset
@@ -62,62 +185,53 @@ function initMap() {
     var mapOptions = {
         zoom: 10,
         center: new google.maps.LatLng(33.945621, -118.240816),
-        mapTypeId: google.maps.MapTypeId.ROADMAP
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapId: 'fcedc9151d5f1c62'
+
     };
     map = new google.maps.Map(document.getElementById('map'), mapOptions);
-    google.maps.event.addListener(map, "click", (event) => {
-    });
-    map.data.setStyle(function (feature) {
-        var SD_NAME = feature.getProperty('isResult');
-        var color = "black"
-        var strokeOpacity = 0.6
-        var strokeWeight = 3
-        if (SD_NAME == "True") {
-            color = "yellow";
-            strokeWeight: 8;
-            strokeOpacity: 1;
-        }
-        return {
-            strokeColor: color,
-            strokeWeight: strokeWeight,
-            strokeOpacity: strokeOpacity
-        }
-    });
 }
 
 
-
-
-function addMarker(location,lab,type=0) {
-    if (type==0)
-        image = "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png";
-    else if (type==1)
-        image = "http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png";
-    else if (type==2)
-        image = "http://maps.google.com/mapfiles/kml/pushpin/ltblu-pushpin.png";
-    m = new google.maps.Marker({
-      position: location,
-      label: lab,
-      map: map,
-      icon: image
-    });
-    markers.push(m)
-}
-
-function clearMarkers(){
-    for (let i = 0; i < markers.length; i++) {
-        markers[i].setMap(null)
+function zoomToMarkers(){
+    var bounds = new google.maps.LatLngBounds();
+    for (var i = 0; i < points.length; i++) {
+        bounds.extend(points[i]['marker'].getPosition());
     }
-    markers=[]
-}
 
+    //center the map to the geometric center of all markers
+    map.setCenter(bounds.getCenter());
+
+    map.fitBounds(bounds);
+
+    //remove one zoom level to ensure no marker is on the edge.
+    map.setZoom(map.getZoom()-1);
+
+    // set a minimum zoom
+    // if you got only 1 marker or all markers are on the same address map will be zoomed too much.
+    if(map.getZoom()> 15){
+        map.setZoom(15);
+    }
+
+    //Alternatively this code can be used to set the zoom for just 1 marker and to skip redrawing.
+    //Note that this will not cover the case if you have 2 markers on the same address.
+    if(points.length == 1){
+        map.setMaxZoom(15);
+        map.fitBounds(bounds);
+        map.setMaxZoom(Null)
+    }
+
+    map.fitBounds(bounds);
+}
 function initialize() {
     initMap();
-    clearMarkers()
     document.getElementById("startNode").value="";
     document.getElementById("endNode").value="";
     points=[]
-    traces=null
+    edges=[]
+    startnode=null
+    endnode=null
+    result_edge=null
 }
 function createTable(){
         var cols = ["opcje","cl_node_id","lon","lat"];
@@ -138,17 +252,16 @@ function createTable(){
             // Create a new row
             trow = table.insertRow(-1);
             var cell = trow.insertCell(-1); //lat,lon,id)
-            lat = list[i][cols[3]]
-            lon = list[i][cols[2]]
-            id = list[i][cols[1]]
-            cell.innerHTML='<button onclick=\"markPoint('+lat+','+lon+','+id+')\">mark</button>\n'+'' +
-                '<button onclick="markStartNode('+lat+','+lon+','+id+')">start</button>'+
-                '<button onclick="markEndNode('+lat+','+lon+','+id+')">dest</button>'
+            lat = list[i]['node'][cols[3]]
+            lon = list[i]['node'][cols[2]]
+            id = list[i]['node'][cols[1]]
+            cell.innerHTML='<button onclick="markStartNode('+id+')">start</button>'+
+                '<button onclick="markEndNode('+id+')">dest</button>'
 
             for (var j = 1; j < cols.length; j++) {
                 cell = trow.insertCell(-1);
                 // Inserting the cell at particular place
-                cell.innerHTML = list[i][cols[j]];
+                cell.innerHTML = list[i]['node'][cols[j]];
             }
         }
         // Add the newely created table containing json data
@@ -168,18 +281,28 @@ function clearMap() {
             document.getElementById("table").innerHTML=""
         }
     }
+    points = [];
+    edges = []
+    result_edge = []
+
 }
 
 
 function loadgraph(id) {
     $("body").addClass("loading");
+    $("#check").prop('checked', true);
     const Http = new XMLHttpRequest();
     const url='http://localhost:8888/prepare_graph/'+id;
     Http.open("GET", url);
     Http.send();
     Http.onreadystatechange =  function() {
         if (Http.readyState === XMLHttpRequest.DONE) {
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.status == 409 || this.status == 400) {
+                window.alert("Something's wrong.\nTry loading the graph from DB and input starting and finishing nodes");
+                $("body").removeClass("loading");
+
+            }
+            else if (this.readyState == 4 && this.status == 200) {
                 initialize();
                 loadGeoJsonString(Http.responseText)
                 $("body").removeClass("loading");
@@ -192,34 +315,65 @@ function loadgraph(id) {
         }
     }
 }
-function markPoint(lat,lon,id) {
-    pos = new google.maps.LatLng({
-        lat: lat,
-        lng: lon
-    });
-    addMarker(pos,id.toString())
+
+function markStartNode(id) {
+    if (startnode !=null){
+        startnode["marker"].setOptions({
+            icon: {
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            },
+        })
+        startnode["marker"].setMap(null);
+        startnode["marker"].setMap(map);
+    }
+
+
+    document.getElementById("startNode").value = id;
+    startnode = points.find((value, index) => {
+        return (value["id"] == id)
+    })
+    startnode["marker"].setOptions({icon: {
+            url:"http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+        },})
+    startnode["marker"].setMap(null);
+    startnode["marker"].setMap(map);
+
+
 }
-function markStartNode(lat,lon,id){
-    document.getElementById("startNode").value=id;
-    pos = new google.maps.LatLng({
-        lat: lat,
-        lng: lon
-    });
-    addMarker(pos,id.toString(),2)
-}
-function markEndNode(lat,lon,id){
-    document.getElementById("endNode").value=id;
-    pos = new google.maps.LatLng({
-        lat: lat,
-        lng: lon
-    });
-    addMarker(pos,id.toString(),1)
+function markEndNode(id) {
+    if (endnode !=null){
+        endnode["marker"].setOptions({
+            icon: {
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            },
+        })
+        endnode["marker"].setMap(null);
+        endnode["marker"].setMap(map);
+    }
+
+    document.getElementById("endNode").value = id;
+    endnode = points.find((value, index) => {
+        return (value["id"] == id)
+    })
+    endnode["marker"].setOptions({icon: {
+            url:"http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        },})
+    endnode["marker"].setMap(null);
+    endnode["marker"].setMap(map);
+
+
 }
 
-function run() {
+function test() {
     $("body").addClass("loading");
     startId = document.getElementById("startNode").value
     endId = document.getElementById("endNode").value
+    ant_size = document.getElementById("ant_size").value
+    iterN = document.getElementById("iterN").value
+    beta = document.getElementById("beta").value
+    alfa = document.getElementById("alfa").value
+    ro = document.getElementById("ro").value
+
     console.log("run("+startId+","+endId+")")
     const Http = new XMLHttpRequest();
     const url='http://localhost:8888/run/'+startId+'&'+endId;
@@ -228,28 +382,70 @@ function run() {
     Http.onreadystatechange =  function() {
         if (Http.readyState=== XMLHttpRequest.DONE) {
             if (this.status == 409 || this.status == 400) {
-                window.alert("Something's wrong.\nTry loading the graph from DB and input starting and finishing nodes");
+                window.alert("Something's wrong.\nCheck algorithm's parameteres");
             }
             if (this.readyState == 4 && this.status == 200) {
-                loadGeoJsonString(Http.responseText, true)
-                traces=Http.responseText;
-                console.log(Http.done)
+                loadResults(Http.responseText)
             }
             $("body").removeClass("loading");
         }
     }
 }
+var pressedKeys = {};
+window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
+window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
 
-function mark() {
-  id = document.getElementById("nodeId").textContent
-  pos = new google.maps.LatLng({
-    lat: parseFloat(document.getElementById("lat").value),
-    lng: parseFloat(document.getElementById("lon").value)
-  });
+var checkbox = document.querySelector("input[id=check]");
 
-  addMarker(pos,id)
+checkbox.addEventListener('change', function() {
+    if (this.checked) {
+        for (let i = 0; i < points.length; i++) {
+            points[i].marker.setMap(map)
+        }
+    } else {
+        for (let i = 0; i < points.length; i++) {
+            points[i].marker.setMap(null)
+        }
+    }
+});
+
+function run(){
+    var xhr = new XMLHttpRequest();
+    var url = "http://localhost:8888/test";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange =  function() {
+        if (xhr.readyState=== XMLHttpRequest.DONE) {
+            if (this.status == 409 || this.status == 400) {
+                window.alert("Something's wrong.\nTry loading the graph from DB and input starting and finishing nodes");
+            }
+            if (this.readyState == 4 && this.status == 200) {
+                loadResults(JSON.parse(xhr.responseText))
+            }
+            $("body").removeClass("loading");
+        }
+    }
+    node_from = document.getElementById("startNode").value
+    node_to = document.getElementById("endNode").value
+    ant_size = document.getElementById("ant_size").value
+    iterN = document.getElementById("iterN").value
+
+    beta = document.getElementById("beta").value
+    alfa = document.getElementById("alfa").value
+    ro = document.getElementById("ro").value
+
+    var data = JSON.stringify({
+        "alfa":  alfa,  // priorytet feromonu
+        "beta": beta,   // priorytet heurystyki
+        "ro": ro, //wsp. parowania
+        "antN": ant_size, // ilość mrówek
+        "iterN": iterN,
+        "node_from":node_from,
+        "node_to":node_to
+    });
+    xhr.send(data);
 }
-
-for(var i = 1; i < 10; i++) {
-    document.getElementById("graph_loaders").innerHTML += '<input type=\'button\' id=\'load'+i+'\' value=\'Load Graph nr.'+i+'\' onclick=\'loadgraph('+i+');\'>'
-}
+//
+// for(var i = 1; i < 10; i++) {
+//     document.getElementById("graph_loaders").innerHTML += '<input type=\'button\' id=\'load'+i+'\' value=\'Load Graph nr.'+i+'\' onclick=\'loadgraph('+i+');\'>'
+// }

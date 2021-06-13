@@ -10,9 +10,6 @@ public class EdgeDao {
     @Field("id")
     private long id;
 
-    @Field("stname")
-    private String stname;
-
     @Field("the_geom")
     private String coordinates;
 
@@ -30,13 +27,7 @@ public class EdgeDao {
         this.id = id;
     }
 
-    public String getStname() {
-        return stname;
-    }
 
-    public void setStname(String stname) {
-        this.stname = stname;
-    }
 
     public String getCoordinates() {
         return coordinates;

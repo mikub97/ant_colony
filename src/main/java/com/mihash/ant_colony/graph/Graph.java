@@ -47,8 +47,25 @@ public class Graph {
         this.edgeMap=edgeMap;
         this.nodeMap=nodeMap;
     }
+
+    public Graph(List<Node> nodes, List<Edge> edges,boolean b) {
+        this.edgeMap= new HashMap<>();
+        this.nodeMap= new HashMap<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            nodeMap.put(nodes.get(i).getId(),nodes.get(i));
+        }
+        for (int i = 0; i < edges.size(); i++) {
+            edgeMap.put(edges.get(i).getId(),edges.get(i));
+        }
+        connect();
+    }
+
+
     public List<Long> getNodesIds() {
         return nodeMap.keySet().stream().collect(Collectors.toList());
+    }
+    public List<Long> getEdgesIds() {
+        return edgeMap.keySet().stream().collect(Collectors.toList());
     }
     public Node getNode(long id){
         return nodeMap.get(id);
@@ -175,6 +192,21 @@ public class Graph {
     return components;
     }
 
+    public Graph createGraphInArea(double lat, double lon, double r) {
+        List<Node> nodes = nodeMap.values().stream().filter((node) -> {
+            return (Haversine.distance(lat, lon, node.getLat(), node.getLon()) <= r);
+        }).collect(Collectors.toList());
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.get(i).getEdges().size(); j++) {
+                if (! edges.contains(nodes.get(i).getEdges().get(j)) && (nodes.contains(nodes.get(i).getEdges().get(j).getNodes().get(0))&& (nodes.contains(nodes.get(i).getEdges().get(j).getNodes().get(1)))))
+                    edges.add(nodes.get(i).getEdges().get(j));
+            }
+        }
+
+        return new Graph(nodes,edges,true);
+    }
+
     // n - który z kolei komponent 1 - największy 2- drugi największy itp.
     public Graph createGraphFromComponent(int n) {
 
@@ -237,10 +269,10 @@ public class Graph {
                 dest.getLat(),dest.getLon());
     }
 
-    public void updateFeromone(List<Long> edgeHistory, double ratio) {
-        for (int i = 0; i < edgeHistory.size(); i++) {
-            edgeMap.get(edgeHistory.get(i)).updateFeromone(ratio);
-        }
+
+
+    public void addFeromone(Long edgeId, double value){
+        edgeMap.get(edgeId).setFeromone(edgeMap.get(edgeId).getFeromone()+value);
     }
 
     public String toGeoString(){

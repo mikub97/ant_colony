@@ -1,6 +1,7 @@
 package com.mihash.ant_colony.ant_colony;
 
 
+import com.mihash.ant_colony.dao.AntColonyDao;
 import com.mihash.ant_colony.graph.Edge;
 import com.mihash.ant_colony.graph.Graph;
 import com.mihash.ant_colony.graph.Node;
@@ -11,26 +12,33 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Ant {
+    private AntColonyDao antColonyDao;
     private Node current;
+    private List<List<List<Long>>> traces;
+    private List<List<Long>> trace_from_iter;
     private List<Long> nodesHistory;
     private List<Long> edgesHistory;
     private Long destinationNodeId;
-    private double distanceSum;
     private Long startNodeId;
     private boolean atWork;
     private Graph graph;
     private int id;
+    private int iter;
+    private double distanceSum;
 
-    public Ant(Graph graph, Long startNodeId,Long destinationNodeId, int id) {
+    public Ant(Graph graph, AntColonyDao antColonyDao, int id) {
         this.graph=graph;
-        this.current = graph.getNode(startNodeId);
+        this.antColonyDao = antColonyDao;
+        this.current = graph.getNode(antColonyDao.getNode_from());
         this.nodesHistory = new ArrayList<>();
         this.edgesHistory = new ArrayList<>();
-        this.destinationNodeId = destinationNodeId;
-        this.startNodeId = startNodeId;
+        this.destinationNodeId = antColonyDao.getNode_to();
+        this.startNodeId = antColonyDao.getNode_from();
         this.nodesHistory.add(startNodeId);
         this.distanceSum=0.0;
         this.id=id;
+        this.traces=new ArrayList<>();
+        this.trace_from_iter=new ArrayList<>();
         atWork=true;
     }
 
@@ -55,7 +63,22 @@ public class Ant {
         return current;
     }
 
-    public void reset(){
+    public void reset(int iter){
+        if (iter>0) {
+            this.traces.add(new ArrayList<>(trace_from_iter));
+        }
+        this.trace_from_iter=new ArrayList<>();
+        this.current = graph.getNode(startNodeId);
+        this.nodesHistory = new ArrayList<>();
+        this.edgesHistory = new ArrayList<>();
+        this.nodesHistory.add(startNodeId);
+        this.distanceSum=0.0;
+        this.atWork=true;
+    }
+    //Uruchomione gdy mrówka jest resetowana, bo weszła w ślepą uliczkę,
+    public void deadEndReset(){
+        this.edgesHistory.add(-0L);
+        this.trace_from_iter.add(new ArrayList(nodesHistory));
         this.current = graph.getNode(startNodeId);
         this.nodesHistory = new ArrayList<>();
         this.edgesHistory = new ArrayList<>();
@@ -64,9 +87,15 @@ public class Ant {
         this.atWork=true;
     }
 
+//    return 1, when arrived
+//    return 0 if not yet
+//   return -1 if in dead end
+
     public int move() throws Exception {
-        if (current.getId()==destinationNodeId)
+        if (current.getId()==destinationNodeId) {
+            this.trace_from_iter.add(this.nodesHistory);
             return 1;
+        }
         Edge selectedEdge = selectNextEdge();
         if (selectedEdge==null) {
             //"Error ant at dead end"
@@ -77,16 +106,6 @@ public class Ant {
         current=selectedEdge.getSecondNode(current);
         nodesHistory.add(current.getId());
         return 0; // nie znalazłem
-    }
-    public String getNodeHistoryString(int iter){
-        StringBuilder builder = new StringBuilder();
-        builder.append("\nNODE HISTORY FOR ANT "+id+" (iteration "+iter+")"+"\n");
-        for (int i = 0; i < nodesHistory.size(); i++) {
-            builder.append("Node "+nodesHistory.get(i));
-            if (i<nodesHistory.size()-1)
-                builder.append("->");
-        }
-        return builder.toString();
     }
 
     private Edge selectNextEdge() throws Exception {
@@ -105,7 +124,7 @@ public class Ant {
         List<Double> odds = new ArrayList<>();
         double sum=0.0;
         for (int i = 0; i < edges.size(); i++) {
-            double v = Math.pow(edges.get(i).getFeromone(),AntColony.alfa) * Math.pow(graph.calcHeuristic(edges.get(i),current.getId(),destinationNodeId),AntColony.beta);
+            double v = Math.pow(edges.get(i).getFeromone(),antColonyDao.getAlfa()) + Math.pow(graph.calcHeuristic(edges.get(i),current.getId(),destinationNodeId),antColonyDao.getBeta());
             odds.add(v);
             sum+=v;
         }
@@ -143,6 +162,7 @@ public class Ant {
 
     }
 
+
     public static <K, V> Map<K, V> zipToMap(List<K> keys, List<V> values) {
         Iterator<K> keyIter = keys.iterator();
         Iterator<V> valIter = values.iterator();
@@ -159,5 +179,18 @@ public class Ant {
 
     public List<Long> getNodeHistory() {
         return this.nodesHistory;
+    }
+
+    public String describe() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Ant nr."+this.id+"\n");
+        for (int i = 0; i < traces.size(); i++) {
+            builder.append("\tIteration nr."+i+"\n");
+            for (int j = 0; j < traces.get(i).size(); j++) {
+                builder.append("\t\t"+traces.get(i).get(j).toString()+"\n");
+            }
+        }
+        return builder.toString();
+
     }
 }

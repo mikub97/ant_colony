@@ -1,5 +1,6 @@
 package com.mihash.ant_colony.services;
 
+import com.mihash.ant_colony.dao.AntColonyDao;
 import com.mihash.ant_colony.dao.EdgeDao;
 import com.mihash.ant_colony.dao.GraphDao;
 import com.mihash.ant_colony.dao.NodeDao;
@@ -13,6 +14,8 @@ public interface IGraphService {
     List<GraphDao> listAllGraphs();
 
     GraphDao getGraphByID(int id);
+
+    int insert(GraphDao graphDao);
 
     List<GraphDao> findAllGraphsById(Collection<Integer> ids);
 
@@ -31,7 +34,7 @@ public interface IGraphService {
 
     List<NodeDao> findAllNodesById(Collection<Long> ids);
 
-    String run(int from, int to);
+    AntColonyDao run(AntColonyDao antColonyDao);
 
     String clear();
 }

@@ -28,101 +28,111 @@ public class Reader {
         }
         return edges;
     }
-    public static void readGeoNodes(List<Long> ids) {
-
-        InputStream is = null;
-
-        try {
-            is = new FileInputStream(new File("Street Intersections.geojson"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String text = null;
-        try {
-            text = IOUtils.toString(is, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JSONArray tosave = new JSONArray();
-        JSONArray arr = new JSONObject(text).getJSONArray("features");
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject properties = arr.getJSONObject(i).getJSONObject("properties");
-            try{
-                if (ids.contains(properties.getLong("cl_node_id"))) {
-                    System.out.println(arr.getJSONObject(i).toString());
-                    tosave.put(arr.get(i));
-                }
-            }catch (JSONException e){
-
-            }
-        }
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter(new File("example4_nodes"));
-            fileWriter.write("{\n" +
-                    "  \"type\": \"FeatureCollection\",\n" +
-                    "  \"features\": ");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        tosave.write(fileWriter);
-        try {
-            fileWriter.write("}");
-            fileWriter.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void readGeoEdges(List<Long> ids) {
-
-        InputStream is = null;
-
-        try {
-            is = new FileInputStream(new File("Street Centerline.geojson"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String text = null;
-        try {
-            text = IOUtils.toString(is, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JSONArray tosave = new JSONArray();
-        JSONArray arr = new JSONObject(text).getJSONArray("features");
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject properties = arr.getJSONObject(i).getJSONObject("properties");
-            try{
-                if (ids.contains(properties.getLong("id"))) {
-                    System.out.println(arr.getJSONObject(i).toString());
-                    tosave.put(arr.get(i));
-                }
-            }catch (JSONException e){
-
-            }
-        }
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter(new File("example4"));
-            fileWriter.write("{\n" +
-                    "  \"type\": \"FeatureCollection\",\n" +
-                    "  \"features\": ");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        tosave.write(fileWriter);
-        try {
-            fileWriter.write("}");
-            fileWriter.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void readGeoNodes(List<Long> ids) {
+//
+//        InputStream is = null;
+//
+//        try {
+//            is = new FileInputStream(new File("Street Intersections.geojson"));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        String text = null;
+//        try {
+//            text = IOUtils.toString(is, "UTF-8");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        JSONArray tosave = new JSONArray();
+//        JSONArray arr = null;
+//        try {
+//            arr = new JSONObject(text).getJSONArray("features");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        for (int i = 0; i < arr.length(); i++) {
+//            try{
+//                JSONObject properties = arr.getJSONObject(i).getJSONObject("properties");
+//                if (ids.contains(properties.getLong("cl_node_id"))) {
+//                    System.out.println(arr.getJSONObject(i).toString());
+//                    tosave.put(arr.get(i));
+//                }
+//            }catch (JSONException e){
+//
+//            }
+//        }
+//        FileWriter fileWriter = null;
+//        try {
+//            fileWriter = new FileWriter(new File("example4_nodes"));
+//            fileWriter.write("{\n" +
+//                    "  \"type\": \"FeatureCollection\",\n" +
+//                    "  \"features\": ");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        tosave.write(fileWriter);
+//        try {
+//            fileWriter.write("}");
+//            fileWriter.close();
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public static void readGeoEdges(List<Long> ids) {
+//
+//        InputStream is = null;
+//
+//        try {
+//            is = new FileInputStream(new File("Street Centerline.geojson"));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        String text = null;
+//        try {
+//            text = IOUtils.toString(is, "UTF-8");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        JSONArray tosave = new JSONArray();
+//        JSONArray arr = null;
+//        try {
+//            arr = new JSONObject(text).getJSONArray("features");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        for (int i = 0; i < arr.length(); i++) {
+//            try{
+//                JSONObject properties = arr.getJSONObject(i).getJSONObject("properties");
+//                if (ids.contains(properties.getLong("id"))) {
+//                    System.out.println(arr.getJSONObject(i).toString());
+//                    tosave.put(arr.get(i));
+//                }
+//            }catch (JSONException e){
+//
+//            }
+//        }
+//        FileWriter fileWriter = null;
+//        try {
+//            fileWriter = new FileWriter(new File("example4"));
+//            fileWriter.write("{\n" +
+//                    "  \"type\": \"FeatureCollection\",\n" +
+//                    "  \"features\": ");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        tosave.write(fileWriter);
+//        try {
+//            fileWriter.write("}");
+//            fileWriter.close();
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static Map<Long, Node> readNodes() {
         List<List<String>> edges_str = read("data/nodes.csv");

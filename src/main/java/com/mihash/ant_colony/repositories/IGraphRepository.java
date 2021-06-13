@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IGraphRepository extends MongoRepository<GraphDao,String> {
-     GraphDao getGraphById(int id);
+     @Override
+     Iterable<GraphDao> findAllById(Iterable<String> iterable);
 
-
+     GraphDao getGraphDaoById(int id);
+     @Override
+     <S extends GraphDao> S insert(S s);
 }

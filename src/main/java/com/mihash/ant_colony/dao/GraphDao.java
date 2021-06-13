@@ -1,5 +1,6 @@
 package com.mihash.ant_colony.dao;
 
+import com.mihash.ant_colony.graph.Graph;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 

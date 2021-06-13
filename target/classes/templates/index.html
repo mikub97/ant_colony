@@ -6,35 +6,76 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <link href="https://unpkg.com/material-components-web@6.0.0/dist/material-components-web.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC59k5SuHRCp-BoS8h3vapW2hSxEA2mDr4&callback=initialize&libraries=&v=weekly" defer> </script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyC59k5SuHRCp-BoS8h3vapW2hSxEA2mDr4&callback=initialize&v=3" defer> </script>
+
     <link th:href="@{/styles/style.css}" rel="stylesheet" />
   </head>
   <body>
   <!--/*@thymesVar id="info" type=""*/-->
 <!--  <p th:text="'Hello, ' + ${info} + '!'" />-->
     <div id="container">
-      <div id="map"></div>
+      <div id="map">
+
+      </div>
       <div id="sidebar" class="mdc-typography">
         <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
           <fieldset>
-<!--              <h5>Load graph from file</h5>-->
-<!--              <input type='file' id='fileinput' value="Browse">-->
-<!--              <input type='button' id='btnLoad' value='Load it' onclick='loadFile();'>-->
               <h5>Load graph from Database</h5>
-              <div id = 'graph_loaders'></div>
+              <div id = 'graph_loaders'>
+                  <tr>
+                      <td><label for="graphloader">Graph id (number)</label></td>
+                      <td><input type="number" min="0" step="1" id="graphloader" width="20px" typeof="number"></td>
+                      <td> <td><input type="button" id="load" value="Load" onclick='loadgraph(parseInt(document.getElementById("graphloader").value))'></td>
+                      </td>
+                  </tr>
+              </div>
               <h5>Clear the map</h5>
               <input type='button' id='btnRefresh' value='Clear Map' onclick='clearMap();'>
-              <input type='button' id='btnClear' value='Clear Markers' onclick='clearMarkers();'>
-
+              <!-- Rounded switch -->
+              <label for="check" >show markers</label>
+              <label class="switch">
+                  <input type="checkbox" id="check">
+                  <span class="slider round"></span>
+              </label>
           </fieldset>
         </form>
         <form id="antRunner" name="antRunner" enctype="multipart/form-data" method="post">
           <fieldset>
-
-
-            <input type="text" id="startNode" width="40px">
-            <input type="text" id="endNode" width="40px">
-            <input type="button" id="btnRun" value="Run" onclick='run()'>
+              <table id="ants_run_config">
+                  <tbody>
+                    <tr>
+                        <td><label for="startNode">Start Node</label></td>
+                        <td><input type="text" id="startNode" width="40px"></td>
+                    </tr>
+                    <tr>
+                      <td><label for="endNode">Destination Node</label></td>
+                      <td><input type="text" id="endNode" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="ant_size">Number of ants</label></td>
+                        <td><input type="text" value="10" id="ant_size" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="iterN">Number of iteration</label></td>
+                        <td><input type="text" value="10" id="iterN" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="endNode">Beta</label></td>
+                        <td><input type="text" value="0.2"id="beta" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="endNode">Alfa</label></td>
+                        <td><input type="text" value="0.2"id="alfa" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="endNode">Steaming rate</label></td>
+                        <td><input type="text" value="0.2"id="ro" width="40px"></td>
+                    </tr>
+                    <tr>
+                      <td><input type="button" id="btnRun" value="Run" onclick='run()'></td>
+                    </tr>
+                  </tbody>
+              </table>
 
           </fieldset>
         </form>

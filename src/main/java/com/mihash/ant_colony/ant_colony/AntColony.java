@@ -1,21 +1,21 @@
 package com.mihash.ant_colony.ant_colony;
 
+import com.mihash.ant_colony.dao.AntColonyDao;
 import com.mihash.ant_colony.graph.Edge;
 import com.mihash.ant_colony.graph.Graph;
-import com.mihash.ant_colony.graph.Node;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class AntColony {
-    public static double alfa=1;    // priorytet feromonu
-    public static double beta=1;    // priorytet heurystyki
-    public static double ro=0.02; //wsp. parowania
-    public static int antN=10; // ilość mrówek
-    public static int iterN=10; // ilość iteracji
+    private long destinationNode;
+    public  double alfa=1;    // priorytet feromonu
+    public double beta=1;    // priorytet heurystyki
+    public double ro=0.02; //wsp. parowania
+    public int antN=10; // ilość mrówek
+    public  int iterN=10; // ilość iteracji
     private double bestResult;
     private List<Long> bestEdgeHistory;
     private List<Long> bestNodesHistory;
@@ -24,30 +24,20 @@ public class AntColony {
     private List<Ant> ants;
 
 
-    public AntColony(Graph graph, Node start, Node end) {
+
+
+
+    public AntColony(Graph graph, AntColonyDao antColonyDao) {
         this.graph = graph;
         this.ants = new ArrayList<>();
-        for (int i = 0; i < antN; i++) {
-            ants.add(new Ant(graph,start.getId(), end.getId(),i));
+        for (int i = 0; i < antColonyDao.getAntN(); i++) {
+            ants.add(new Ant(graph,antColonyDao,i));
         }
+        this.destinationNode = antColonyDao.getNode_to();
         this.bestResult=Double.MAX_VALUE;
         this.bestEdgeHistory = new ArrayList<>();
         this.bestNodesHistory = new ArrayList<>();
         this.traces = new ArrayList<>();
-
-    }
-
-    public AntColony(Graph graph,long startId,long endId) {
-        this.graph = graph;
-        this.ants = new ArrayList<>();
-        for (int i = 0; i < antN; i++) {
-            ants.add(new Ant(graph,startId, endId,i));
-        }
-        this.bestResult=Double.MAX_VALUE;
-        this.bestEdgeHistory = new ArrayList<>();
-        this.bestNodesHistory = new ArrayList<>();
-        this.traces = new ArrayList<>();
-
     }
 
     public void vaporizeFeromone(){
@@ -59,7 +49,7 @@ public class AntColony {
         });
     }
 
-    public String run() {
+    public int run() {
         for (int i = 0; i < iterN; i++) {
             try {
                 iteration(i);
@@ -67,8 +57,12 @@ public class AntColony {
                 e.printStackTrace();
             }
         }
-        return bestNodesHistory.toString();
+        for (int i = 0; i < ants.size(); i++) {
+            System.out.println(ants.get(i).describe());
+        }
+        return 0;
     }
+
 
     public String resultsToGeoString(){
 
@@ -90,49 +84,85 @@ public class AntColony {
 
     }
 
-    public boolean areAntsWorking() {
+    public boolean areAntsFinished() {
         for (int i = 0; i < ants.size(); i++) {
             if (ants.get(i).isAtWork())
-                return true;
+                return false;
         }
-        return false;
+        return true;
     }
+//    public int iteration(int iter) throws Exception {
+//        resetAnts(iter);
+//        while (!areAntsFinished()) {
+//            for (int i = 0; i < ants.size(); i++) {
+//                Ant currentAnt = ants.get(i);
+//                    if (currentAnt.isAtWork()) {
+//                        switch (currentAnt.move()) {
+//                            case 1:
+//                                currentAnt.setAtWork(false);
+//                                continue;
+//                            case -1:
+//                                currentAnt.reset();
+//                                continue;
+//                    }
+//                }
+//            }
+//        }
+//        updateBestResult();
+//        vaporizeFeromone();
+//
+//        return 0;
+//
+//    }
     public int iteration(int iter) throws Exception {
-        while (areAntsWorking()) {
-            for (int i = 0; i < ants.size(); i++) {
-                Ant currentAnt = ants.get(i);
-                    if (currentAnt.isAtWork()) {
-                        switch (currentAnt.move()) {
-                            case 1:
-                                double length = currentAnt.getRouteLength();
-                                if (length < this.bestResult) {
-                                    this.bestResult = length;
-                                    this.bestEdgeHistory = currentAnt.getEdgeHistory();
-                                    this.bestNodesHistory = currentAnt.getNodeHistory();
-                                }
-                                currentAnt.setAtWork(false);
-                                continue;
-                            case -1:
-                                currentAnt.reset();
-                                continue;
-
-                    }
+        resetAnts(iter);
+        for (int i = 0; i < ants.size(); i++) {
+            while (ants.get(i).isAtWork()){
+                    switch (ants.get(i).move()) {
+                        case 1:
+                            ants.get(i).setAtWork(false);
+                            continue;
+                        case -1:
+                            ants.get(i).deadEndReset();
+                            continue;
                 }
             }
         }
+
+        updateBestResult();
         vaporizeFeromone();
-        double sum=0.0;
-        HashMap<Integer, List<Long>> trace = new HashMap<>();
-        for (int i = 0; i < ants.size(); i++) {
-            trace.put(ants.get(i).getId(),ants.get(i).getNodeHistory());
-            ants.get(i).reset();
-            graph.updateFeromone(ants.get(i).getEdgeHistory(),
-                    ants.get(i).getRouteLength()/bestResult);
-        }
-        traces.add(trace);
-
+        updateFeromone();
         return 0;
+    }
 
+    private void resetAnts(int iter) {
+        for (int i = 0; i < ants.size(); i++) {
+            ants.get(i).reset(iter);
+        }
+    }
+
+    private void updateFeromone(){
+        for (int i = 0; i < ants.size(); i++) {
+            List<Long> nodeHistory = ants.get(i).getNodeHistory();
+            if (nodeHistory.get(nodeHistory.size()-1)==destinationNode){
+                List<Long> edgeHistory = ants.get(i).getEdgeHistory();
+                for (int j = 0; j < edgeHistory.size(); j++) {
+                    this.graph.addFeromone(edgeHistory.get(j),1*bestResult/ants.get(i).getRouteLength());
+                }
+            }
+        }
+    }
+
+
+    private void updateBestResult() {
+        for (int i = 0; i < ants.size(); i++) {
+            double length = ants.get(i).getRouteLength();
+            if ((length < this.bestResult)) {
+                this.bestResult = length;
+                this.bestEdgeHistory = new ArrayList<>(ants.get(i).getEdgeHistory());
+                this.bestNodesHistory = new ArrayList<>(ants.get(i).getNodeHistory());
+            }
+        }
     }
 
     public double getBestResult() {
@@ -155,5 +185,45 @@ public class AntColony {
                 builder.append("->");
         }
         return builder.toString();
+    }
+
+    public double getAlfa() {
+        return alfa;
+    }
+
+    public void setAlfa(double alfa) {
+        this.alfa = alfa;
+    }
+
+    public double getBeta() {
+        return beta;
+    }
+
+    public void setBeta(double beta) {
+        this.beta = beta;
+    }
+
+    public double getRo() {
+        return ro;
+    }
+
+    public void setRo(double ro) {
+        this.ro = ro;
+    }
+
+    public int getAntN() {
+        return antN;
+    }
+
+    public void setAntN(int antN) {
+        this.antN = antN;
+    }
+
+    public int getIterN() {
+        return iterN;
+    }
+
+    public void setIterN(int iterN) {
+        this.iterN = iterN;
     }
 }
