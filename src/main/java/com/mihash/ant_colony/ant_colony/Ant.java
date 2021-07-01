@@ -14,8 +14,8 @@ import java.util.stream.IntStream;
 public class Ant {
     private AntColonyDao antColonyDao;
     private Node current;
-    private List<List<List<Long>>> traces;
-    private List<List<Long>> trace_from_iter;
+    private List<List<Long>> traces;
+    private List<Double> best_results;
     private List<Long> nodesHistory;
     private List<Long> edgesHistory;
     private Long destinationNodeId;
@@ -38,8 +38,8 @@ public class Ant {
         this.distanceSum=0.0;
         this.id=id;
         this.traces=new ArrayList<>();
-        this.trace_from_iter=new ArrayList<>();
-        atWork=true;
+        this.best_results= new ArrayList<>();
+        this.atWork=true;
     }
 
     public boolean isAtWork() {
@@ -64,21 +64,17 @@ public class Ant {
     }
 
     public void reset(int iter){
-        if (iter>0) {
-            this.traces.add(new ArrayList<>(trace_from_iter));
-        }
-        this.trace_from_iter=new ArrayList<>();
         this.current = graph.getNode(startNodeId);
         this.nodesHistory = new ArrayList<>();
         this.edgesHistory = new ArrayList<>();
         this.nodesHistory.add(startNodeId);
         this.distanceSum=0.0;
         this.atWork=true;
+        this.iter= iter;
     }
     //Uruchomione gdy mrówka jest resetowana, bo weszła w ślepą uliczkę,
     public void deadEndReset(){
         this.edgesHistory.add(-0L);
-        this.trace_from_iter.add(new ArrayList(nodesHistory));
         this.current = graph.getNode(startNodeId);
         this.nodesHistory = new ArrayList<>();
         this.edgesHistory = new ArrayList<>();
@@ -93,7 +89,8 @@ public class Ant {
 
     public int move() throws Exception {
         if (current.getId()==destinationNodeId) {
-            this.trace_from_iter.add(this.nodesHistory);
+            this.traces.add(new ArrayList<>(nodesHistory));
+            this.best_results.add(distanceSum);
             return 1;
         }
         Edge selectedEdge = selectNextEdge();
@@ -119,45 +116,61 @@ public class Ant {
         }).collect(Collectors.toList());
         if (edges.size()==0)
             return null;
+
+//        edges.sort(new Comparator<Edge>() {
+//            @Override
+//            public int compare(Edge o1, Edge o2) {
+//                try {
+//                    double v = o1.calcAim(antColonyDao.getAlfa(), antColonyDao.getBeta()) - o2.calcAim(antColonyDao.getAlfa(), antColonyDao.getBeta());
+//                    if (v < 0)
+//                        return 1;
+//                     if (v > 0)
+//                        return -1;
+//                     return 0;
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                return 0;
+//            }
+//        });
+//        return edges.get(0);
+        // koło ruletki
         else if (edges.size()==1)
             return edges.get(0);
         List<Double> odds = new ArrayList<>();
         double sum=0.0;
         for (int i = 0; i < edges.size(); i++) {
-            double v = Math.pow(edges.get(i).getFeromone(),antColonyDao.getAlfa()) + Math.pow(graph.calcHeuristic(edges.get(i),current.getId(),destinationNodeId),antColonyDao.getBeta());
+            double v = edges.get(i).calcAim(antColonyDao.getAlfa(),antColonyDao.getBeta());
             odds.add(v);
             sum+=v;
         }
         for (int i = 0; i < odds.size(); i++) {
             odds.set(i,odds.get(i)/sum);
         }
+        for (int i = 1; i < odds.size(); i++) {
+            odds.set(i,odds.get(i)+odds.get(i-1));
+        }
+
         return roulette(zipToMap(edges,odds));
 
     }
 
     private Edge roulette(Map<Edge,Double> map) {
         Iterator<Map.Entry<Edge, Double>> iterator = map.entrySet().stream().sorted(Map.Entry.<Edge, Double>comparingByValue()).iterator();
-
-//        List<Map.Entry<Edge, Double>> entryList = map.entrySet().stream().sorted(Map.Entry.<Edge, Double>comparingByValue()).collect(Collectors.toList());
-
         double r = new Random().nextDouble();
-        Map.Entry<Edge, Double> last=null;
         Map.Entry<Edge, Double> current=null;
 
         if (iterator.hasNext())
-            last=iterator.next();
-        if (iterator.hasNext())
             current=iterator.next();
 
-        if (r<=last.getValue())
-            return last.getKey();
+        if (r<=current.getValue())
+            return current.getKey();
         while (iterator.hasNext()) {
-            if ((last.getValue()<=r)&&(current.getValue()>=r)){
-                return current.getKey();
-            }
-            last=current;
             current=iterator.next();
+            if (r<=current.getValue())
+                return current.getKey();
         }
+
         return current.getKey();
 
     }
@@ -186,11 +199,23 @@ public class Ant {
         builder.append("Ant nr."+this.id+"\n");
         for (int i = 0; i < traces.size(); i++) {
             builder.append("\tIteration nr."+i+"\n");
-            for (int j = 0; j < traces.get(i).size(); j++) {
-                builder.append("\t\t"+traces.get(i).get(j).toString()+"\n");
-            }
+//            for (int j = 0; j < traces.get(i).size(); j++) {
+//                builder.append("\t\t"+traces.get(i).get(j).toString()+"\n");
+//            }
+              builder.append("\t\t"+traces.get(i).toString()+"\n\t\t\twith len="+best_results.get(i)+", and pherom. = "+antColonyDao.getQ2()/best_results.get(i)+"\n");
+
         }
         return builder.toString();
 
     }
+
+    public String describeIter(int i ) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Ant nr."+this.id+"\n");
+        builder.append("\tIteration nr."+i+"\n");
+        builder.append("\t\t"+traces.get(i).toString()+"\n\t\t\twith len="+best_results.get(i)+", and pherom. = "+antColonyDao.getQ2()/best_results.get(i)+"\n");
+        return builder.toString();
+
+    }
+
 }

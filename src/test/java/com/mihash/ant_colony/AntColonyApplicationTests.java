@@ -1,6 +1,7 @@
 package com.mihash.ant_colony;
 
 import com.mihash.ant_colony.dao.GraphDao;
+import com.mihash.ant_colony.graph.Edge;
 import com.mihash.ant_colony.graph.Graph;
 import com.mihash.ant_colony.services.GraphService;
 import com.mihash.ant_colony.services.IGraphService;
@@ -8,7 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = GraphService.class)
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 class AntColonyApplicationTests {
 
 
@@ -16,14 +20,19 @@ class AntColonyApplicationTests {
 	@Test
 	void test() {
         Graph graphInArea = new Graph();
-        graphInArea.createGraphInArea(34.1359485,-118.22527989,0.5);
-        GraphDao graphDao = new GraphDao();
-        graphDao.setEdges_size(graphInArea.getEdgesIds().size());
-        graphDao.setNodes_size(graphInArea.getNodesIds().size());
-        graphDao.setEdgeIds(graphInArea.getEdgesIds());
-        graphDao.setNodeIds(graphInArea.getNodesIds());
-        graphDao.setId(1);
-        new GraphService().insert(graphDao);
-	}
+        int [] l = new int[]{19936, 19447, 19431, 19911, 19446, 19720, 19799, 19800, 19798, 19733, 19734, 19934, 19935, 54709, 19503, 19504, 19907, 19761, 19488, 19735, 19494, 19479, 19478};
+        ArrayList<Long> nodesIds = new ArrayList<>();
+        for (int i = 0; i < l.length; i++) {
+            nodesIds.add((long) l[i]);
+        }
+        try {
+            List<Edge> edges = graphInArea.edgeHistoryFromNodeHistory(nodesIds);
+            System.out.println(edges);
+            System.out.println(graphInArea.calcDistanceFromEdgeHistory(edges));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

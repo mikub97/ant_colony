@@ -24,7 +24,7 @@
               <div id = 'graph_loaders'>
                   <tr>
                       <td><label for="graphloader">Graph id (number)</label></td>
-                      <td><input type="number" min="0" step="1" id="graphloader" width="20px" typeof="number"></td>
+                      <td><input type="number" min="0" step="1" value="1" id="graphloader" width="20px" typeof="number"></td>
                       <td> <td><input type="button" id="load" value="Load" onclick='loadgraph(parseInt(document.getElementById("graphloader").value))'></td>
                       </td>
                   </tr>
@@ -60,15 +60,23 @@
                         <td><input type="text" value="10" id="iterN" width="40px"></td>
                     </tr>
                     <tr>
-                        <td><label for="endNode">Beta</label></td>
-                        <td><input type="text" value="0.2"id="beta" width="40px"></td>
+                        <td><label for="alfa">Alfa</label></td>
+                        <td><input type="text" value="1.7"id="alfa" width="40px"></td>
                     </tr>
                     <tr>
-                        <td><label for="endNode">Alfa</label></td>
-                        <td><input type="text" value="0.2"id="alfa" width="40px"></td>
+                        <td><label for="beta">Beta</label></td>
+                        <td><input type="text" value="1.1"id="beta" width="40px"></td>
                     </tr>
                     <tr>
-                        <td><label for="endNode">Steaming rate</label></td>
+                        <td><label for="q1">Default feromone level (q1)</label></td>
+                        <td><input type="text" value="1"id="q1" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="q2">Feromone amount rate (q2)</label></td>
+                        <td><input type="text" value="1"id="q2" width="40px"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="ro">Steaming rate</label></td>
                         <td><input type="text" value="0.2"id="ro" width="40px"></td>
                     </tr>
                     <tr>

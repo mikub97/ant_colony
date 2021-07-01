@@ -72,7 +72,18 @@ public class GraphService implements IGraphService {
             return null;
         List<Long> edgesIDs = graphDao.getEdgeIds();
         List<Long> nodesIDs = graphDao.getNodeIds();
+        if (n==1){
+            nodesIDs.remove(19354L);
+            nodesIDs.remove(57836L);
+            nodesIDs.remove(57835L);
+            nodesIDs.remove(57834L);
+            nodesIDs.remove(63750L);
 
+            nodesIDs.remove(58196L);
+            nodesIDs.remove(58197L);
+            nodesIDs.remove(58197L);
+// 58196  58197  58197
+        }
         List<EdgeDao> edgeDaos = new ArrayList<>();
         List<NodeDao> nodeDaos = new ArrayList<>();
 
@@ -88,9 +99,11 @@ public class GraphService implements IGraphService {
             AntColony antColony = new AntColony(graph, antColonyDao);
             if (antColonyDao.getNode_from() == antColonyDao.getNode_to()){
                 antColonyDao.setDone(true);
+                antColonyDao.setBestResult(0.0);
                 return antColonyDao;
             }
             antColony.run();
+
             antColonyDao.setResults(antColony.getBestEdgeHistory(),antColony.getBestNodesHistory(),antColony.getBestResult());
         }
         System.out.println("finished:");

@@ -265,14 +265,56 @@ public class Graph {
         if ((next ==null )||(current == null))
             throw new Exception("cannot find a node");
 
-        return 1+1/dist+1/Haversine.distance(next.getLat(),next.getLon(),
-                dest.getLat(),dest.getLon());
+//        return 1+1/dist+1/Haversine.distance(next.getLat(),next.getLon(),
+//                dest.getLat(),dest.getLon());
+        return 1/dist;
     }
 
 
 
     public void addFeromone(Long edgeId, double value){
         edgeMap.get(edgeId).setFeromone(edgeMap.get(edgeId).getFeromone()+value);
+    }
+    public Edge findEdge(long NodeID1, long NodeID2) throws Exception {
+        List<Edge> edges = edgeMap.values().stream().filter(new Predicate<Edge>() {
+            @Override
+            public boolean test(Edge edge) {
+                if (((edge.getFrom_node() == NodeID1) && (edge.getTo_node() == NodeID2))||
+                ((edge.getFrom_node() == NodeID2) && (edge.getTo_node() == NodeID1)) ){
+                    return true;
+                }
+                return false;
+            }
+        }).collect(Collectors.toList());
+        if (edges.size()==1)
+                return edges.get(0);
+        if (edges.size()>1)
+            throw new Exception("Coś nie tak");
+        return null;
+    }
+    public double calcDistanceFromEdgeHistory(List<Edge> edgeHistory){
+        double r = 0.0;
+        for (Edge edge : edgeHistory) {
+            r+=edge.getDistance();
+        }
+        return r;
+    }
+
+    public List<Edge> edgeHistoryFromNodeHistory(List<Long> nodeHistory) throws Exception {
+        Iterator<Long> iterator = nodeHistory.iterator();
+        Long last=null,current=null;
+        if (iterator.hasNext())
+            last=iterator.next();
+        if (iterator.hasNext())
+            current=iterator.next();
+        List<Edge> edgeHistory = new ArrayList<>();
+        edgeHistory.add(findEdge(last,current));
+        while (iterator.hasNext()) {
+            last=current;
+            current=iterator.next();
+            edgeHistory.add(findEdge(last,current));
+        }
+        return edgeHistory;
     }
 
     public String toGeoString(){

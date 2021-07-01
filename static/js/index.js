@@ -5,51 +5,8 @@ let features = []
 let result_edge = []
 let startnode = null;
 let endnode = null
+let s_c = '#FF2BE9'
 
-    //
-    // var point = {
-    //     lat: 22.5667,
-    //     lng: 88.3667
-    // };
-    // var markerSize = {
-    //     x: 22,
-    //     y: 40
-    // };
-    //
-    //
-    // google.maps.Marker.prototype.setLabel = function(label) {
-    //     this.label = new MarkerLabel({
-    //         map: this.map,
-    //         marker: this,
-    //         text: label
-    //     });
-    //     this.label.bindTo('position', this, 'position');
-    // };
-    //
-    // var MarkerLabel = function(options) {
-    //     this.setValues(options);
-    //     this.span = document.createElement('span');
-    //     this.span.className = 'map-marker-label';
-    // };
-    //
-    // MarkerLabel.prototype = $.extend(new google.maps.OverlayView(), {
-    //     onAdd: function() {
-    //         this.getPanes().overlayImage.appendChild(this.span);
-    //         var self = this;
-    //         this.listeners = [
-    //             google.maps.event.addListener(this, 'position_changed', function() {
-    //                 self.draw();
-    //             })
-    //         ];
-    //     },
-    //     draw: function() {
-    //         var text = String(this.get('text'));
-    //         var position = this.getProjection().fromLatLngToDivPixel(this.get('position'));
-    //         this.span.innerHTML = text;
-    //         this.span.style.left = (position.x - (markerSize.x / 2)) - (text.length * 3) + 10 + 'px';
-    //         this.span.style.top = (position.y - markerSize.y + 40) + 'px';
-    //     }
-    // });
 
 function loadGeoJsonString(geoString) {
     const geojson = JSON.parse(geoString);
@@ -73,7 +30,7 @@ function loadResults(results) {
 function repaintEdges(){
     for (let j = 0; j < edges.length; j++) {
         if (result_edge.includes(parseInt(edges[j]["id"]))) {
-            edges[j]["polyline"].setOptions({strokeColor: '#FF2BE9', strokeWeight: 8})
+            edges[j]["polyline"].setOptions({strokeColor: s_c, strokeWeight: 8})
         }
         else{
             edges[j]["polyline"].setOptions({strokeColor: 'black',strokeWeight: 2})
@@ -433,11 +390,15 @@ function run(){
     beta = document.getElementById("beta").value
     alfa = document.getElementById("alfa").value
     ro = document.getElementById("ro").value
+    q1 = document.getElementById("q1").value
 
+    q2 = document.getElementById("q2").value
     var data = JSON.stringify({
         "alfa":  alfa,  // priorytet feromonu
         "beta": beta,   // priorytet heurystyki
         "ro": ro, //wsp. parowania
+        "q1": q1, // default feromone
+        "q2": q2, //feromone zostawiany
         "antN": ant_size, // ilość mrówek
         "iterN": iterN,
         "node_from":node_from,

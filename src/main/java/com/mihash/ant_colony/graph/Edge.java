@@ -28,7 +28,7 @@ public class Edge {
 
         }
         this.lenght=0;
-        this.feromone=1.0;
+        this.feromone=0;
     }
     public Edge(long id, long from_node, long to_node, String street,String the_geom) {
         this.id = id;
@@ -119,6 +119,7 @@ public class Edge {
     public void setFeromone(double v) {
         this.feromone=v;
     }
+
     public double getLenght() {
         return lenght;
     }
@@ -152,6 +153,12 @@ public class Edge {
 
     }
 
-    public void updateFeromone(double value) {
+
+    public double calcHeuristic() {
+        return 1/lenght;
+    }
+    public double calcAim(double alfa, double beta){
+        return Math.pow(this.getFeromone(),alfa) * Math.pow(this.calcHeuristic(),beta);
+
     }
 }

@@ -6,6 +6,9 @@ public class AntColonyDao {
     double alfa;    // priorytet feromonu
     double beta;    // priorytet heurystyki
     double ro; //wsp. parowania
+    double q1; //poziom feromu na krawędziach w starcie
+
+    double q2; //współczynnik dawki zost. feromonu
     int antN; // ilość mrówek
     int iterN; // ilość iteracji
     long node_from;
@@ -15,11 +18,12 @@ public class AntColonyDao {
     private List<Long> bestEdgeHistory;
     private List<Long> bestNodesHistory;
 
-
-    public AntColonyDao(double alfa, double beta, double ro, int antN, int iterN, long node_from, long node_to, boolean done, double bestResult, List<Long> bestEdgeHistory, List<Long> bestNodesHistory) {
+    public AntColonyDao(double alfa, double beta, double ro, double q1, double q2, int antN, int iterN, long node_from, long node_to, boolean done, double bestResult, List<Long> bestEdgeHistory, List<Long> bestNodesHistory) {
         this.alfa = alfa;
         this.beta = beta;
         this.ro = ro;
+        this.q1 = q1;
+        this.q2 = q2;
         this.antN = antN;
         this.iterN = iterN;
         this.node_from = node_from;
@@ -28,6 +32,22 @@ public class AntColonyDao {
         this.bestResult = bestResult;
         this.bestEdgeHistory = bestEdgeHistory;
         this.bestNodesHistory = bestNodesHistory;
+    }
+
+    public double getQ1() {
+        return q1;
+    }
+
+    public void setQ1(double q1) {
+        this.q1 = q1;
+    }
+
+    public double getQ2() {
+        return q2;
+    }
+
+    public void setQ2(double q2) {
+        this.q2 = q2;
     }
 
     public long getNode_from() {
@@ -65,6 +85,8 @@ public class AntColonyDao {
     public double getRo() {
         return ro;
     }
+
+
 
     public void setRo(double ro) {
         this.ro = ro;
@@ -136,6 +158,9 @@ public class AntColonyDao {
                 ", node_to=" + node_to +
                 ", alfa=" + alfa +
                 ", beta=" + beta +
+                ", q1=" + q1 +
+                ", q2=" + q2 +
+                ", best result =" + bestResult +
                 ", ro=" + ro +
                 ", antN=" + antN +
                 ", iterN=" + iterN +
