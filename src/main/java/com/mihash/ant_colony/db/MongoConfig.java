@@ -16,11 +16,12 @@ import java.util.Collections;
 public class MongoConfig {
 
     @Bean
+    // to fill
     public MongoClient mongo() {
         String db_name="test";
-        String username="mihash";
-        String pass="maska0";
-        ConnectionString connectionString = new ConnectionString("mongodb+srv://+"+username+":"+pass+"@cluster0.i3eb6.mongodb.net/"+db_name+"?retryWrites=true&w=majority");
+        String username="";
+        String pass="";
+        ConnectionString connectionString = new ConnectionString("");
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();

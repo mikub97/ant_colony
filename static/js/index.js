@@ -143,7 +143,7 @@ function initMap() {
         zoom: 10,
         center: new google.maps.LatLng(33.945621, -118.240816),
         mapTypeId: google.maps.MapTypeId.ROADMAP,
-        mapId: 'fcedc9151d5f1c62'
+        mapId: 'TO_FILL'
 
     };
     map = new google.maps.Map(document.getElementById('map'), mapOptions);
